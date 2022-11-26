@@ -4,8 +4,6 @@
 
 Install dependencies and start a local dev server.
 
-Then:
-
 - If HTTPS is used (by default enabled)
   - Open your Safe app locally (by default via https://localhost:3000/) and accept the SSL error.
 - Go to the [Safe web interface](https://app.gnosis-safe.io)
