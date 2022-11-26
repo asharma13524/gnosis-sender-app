@@ -1,7 +1,10 @@
-import React, { useCallback } from 'react'
-import styled from 'styled-components'
-import { Button, Title } from '@gnosis.pm/safe-react-components'
-import { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk'
+import React from 'react';
+import styled from 'styled-components';
+import { Title, TextField, Button } from '@gnosis.pm/safe-react-components';
+import { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk';
+import { useSafeBalances } from './hooks/useSafeBalances';
+import BalancesTable from './components/BalancesTable';
+import { getTransferTransaction } from './api/transfers';
 
 const Container = styled.div`
   padding: 1rem;
@@ -11,47 +14,50 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-`
-
-const Link = styled.a`
-  margin-top: 8px;
-`
+`;
 
 const SafeApp = (): React.ReactElement => {
-  const { sdk, safe } = useSafeAppsSDK()
+  const { sdk, safe } = useSafeAppsSDK();
+  const [balances] = useSafeBalances(sdk);
+  const [recipient, setRecipient] = React.useState('0xf5659a11DD4d67aC31026AbA12085ee9e3070E13');
 
-  const submitTx = useCallback(async () => {
-    try {
-      const { safeTxHash } = await sdk.txs.send({
-        txs: [
-          {
-            to: safe.safeAddress,
-            value: '0',
-            data: '0x',
-          },
-        ],
-      })
-      console.log({ safeTxHash })
-      const safeTx = await sdk.txs.getBySafeTxHash(safeTxHash)
-      console.log({ safeTx })
-    } catch (e) {
-      console.error(e)
-    }
-  }, [safe, sdk])
+  const handleTransfer = async (): Promise<void> => {
+      const transactions = balances.map((balance) => getTransferTransaction(balance, recipient));
+      const { safeTxHash } = await sdk.txs.send({ txs: transactions });
+      console.log({ safeTxHash });
+    };
+
+  // Commented out transactions for testing in case txns above fails to populate
+  // const handleTransfer = async (): Promise<void> => {
+  //     // const transactions = balances.map((balance) => getTransferTransaction(balance, recipient));
+  //     const { safeTxHash } = await sdk.txs.send({ txs:
+  //       [
+  //         {
+  //           value: '0', // Ether value of the transaction in WEI
+  //           to: '0x0000000000000000000000000000000000000000', // Transaction recipient
+  //           data: '0x', // Transaction data
+  //         },
+  //       ]});
+  //     console.log({ safeTxHash });
+  //   };
 
   return (
     <Container>
-      <Title size="md">Safe: {safe.safeAddress}</Title>
+      <Title size="sm">Safe: {safe.safeAddress}</Title>
+      <BalancesTable balances={balances} />
 
-      <Button size="lg" color="primary" onClick={submitTx}>
-        Click to send a test transaction
+      <TextField
+        label="Recipient"
+        onChange={(e) => {
+          setRecipient(e.target.value);
+        }}
+        value={recipient}
+      />
+      <Button size="lg" color="primary" onClick={handleTransfer}>
+        Send the assets
       </Button>
-
-      <Link href="https://github.com/gnosis/safe-apps-sdk" target="_blank" rel="noreferrer">
-        Documentation
-      </Link>
     </Container>
-  )
-}
+  );
+};
 
-export default SafeApp
+export default SafeApp;

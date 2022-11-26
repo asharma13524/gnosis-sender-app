@@ -4,12 +4,6 @@
 
 Install dependencies and start a local dev server.
 
-```
-yarn install
-cp .env.sample .env
-yarn start
-```
-
 Then:
 
 - If HTTPS is used (by default enabled)
