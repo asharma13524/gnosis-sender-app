@@ -8,22 +8,29 @@ function encodeTxData(method: AbiItem, recipient: string, amount: string): strin
   return coder.encodeFunctionCall(method, [recipient, amount]);
 }
 
-function getTransferTransaction(item: TokenBalance, recipient: string): BaseTransaction {
-  if (item.tokenInfo.type === 'NATIVE_TOKEN') {
-    return {
-      // Send ETH directly to the recipient address
-      to: recipient,
-      value: item.balance,
-      data: '0x',
-    };
-  }
-
+function getTransferTransaction(value: number, recipient: string): BaseTransaction {
   return {
-    // For other token types, generate a contract tx
-    to: item.tokenInfo.address,
-    value: '0',
-    data: encodeTxData(ERC_20_ABI.transfer, recipient, item.balance),
+    to: recipient,
+    value: value,
+    data: '0x'
   };
+
+  // TODO: Remove this later if everything is working smoothly
+  // if (item.tokenInfo.type === 'NATIVE_TOKEN') {
+  //   return {
+  //     // Send ETH directly to the recipient address
+  //     to: recipient,
+  //     value: value,
+  //     data: '0x',
+  //   };
+  // }
+
+  // return {
+  //   // For other token types, generate a contract tx
+  //   to: recipient,
+  //   value: value,
+  //   data: '0x'
+  // };
 }
 
 export { getTransferTransaction };
